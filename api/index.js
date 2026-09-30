@@ -42,7 +42,7 @@ export default async function handler(req, res) {
   const body = chunks.length ? Buffer.concat(chunks) : undefined;
   const request = new Request(origin + req.url, { method: req.method, headers: req.headers, body: ['GET', 'HEAD'].includes(req.method) ? undefined : body });
   const ASSETS = {
-    // Static files ship inside the function bundle (vercel.json includeFiles); fall back to the CDN copy if a file is missing.
+    // Static files ship inside the function bundle (vercel.json includeFiles).
     async fetch(r) {
       const u = new URL(typeof r === 'string' ? r : r.url);
       const rel = decodeURIComponent(u.pathname).replace(/^\/+/, '');
@@ -50,7 +50,7 @@ export default async function handler(req, res) {
       if (file.startsWith(PUBLIC_DIR) && rel) {
         try { const body = await fs.readFile(file); return new Response(body, { headers: { 'content-type': MIME[path.extname(file)] || 'application/octet-stream' } }); } catch (e) {}
       }
-      try { return await fetch(`${origin}${u.pathname}`, { headers: { 'x-oddsmind-internal': '1' } }); } catch (e) { return new Response('not found', { status: 404 }); }
+      return new Response('not found', { status: 404 }); // never re-enter this function through the CDN (that was a 508 loop)
     },
   };
   const env = { CACHE, ASSETS, TITLES_SEED: titlesSeed, PANTA_API_KEY: process.env.PANTA_API_KEY, GEMINI_API_KEY: process.env.GEMINI_API_KEY, GEMINI_MODEL: process.env.GEMINI_MODEL, GROQ_API_KEY: process.env.GROQ_API_KEY, GROQ_MODEL: process.env.GROQ_MODEL, ADMIN_TOKEN_SHA256: process.env.ADMIN_TOKEN_SHA256 };
