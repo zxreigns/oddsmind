@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}}</title>
+<meta name="description" content="{{DESC}}">
+<meta property="og:title" content="{{TITLE}}">
+<meta property="og:description" content="{{DESC}}">
+<meta property="og:image" content="{{IMAGE}}">
+<meta property="og:url" content="{{URL}}">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/app.css">
+
+</head>
+<body data-page="wallet">
+<header class="top"><div class="wrap">
+  <a class="logo" href="/"><img src="/assets/logo.svg" alt="" width="28" height="28">OddsMind</a>
+  <nav class="main" aria-label="Primary">
+    <a href="/" data-nav="pulse">Pulse</a>
+    <a href="/ask" data-nav="ask">Ask</a>
+    <a href="/wallet" data-nav="wallet">Wallet lens</a>
+    <a href="/api" data-nav="api">API</a>
+    <a href="/about" data-nav="about">About</a>
+  </nav>
+</div></header>
+<main><div class="wrap">
+
+<section class="hero">
+  <h1>Wallet lens</h1>
+  <p class="lead">Paste any Solana wallet to see its Panta positions, what they're worth now, what's claimable, and how it trades.</p>
+  <form class="search" id="w-form" role="search"><input id="w-addr" type="search" value="{{WALLET}}" placeholder="Solana wallet address" aria-label="Wallet address" autocomplete="off" spellcheck="false" class="mono" required><button class="btn" type="submit">Look up</button></form>
+  <div class="chips" id="w-examples"></div>
+</section>
+<div id="w-out"></div>
+
+</div></main>
+<footer class="bottom"><div class="wrap">
+  <a class="powered" href="https://panta.market" target="_blank" rel="noopener"><span class="dot"></span>Powered by Panta</a>
+  <span>Market data via the <a href="https://docs.panta.market/" target="_blank" rel="noopener">Panta API</a> · AI summaries are research aids, not financial advice.</span>
+  <span><a href="https://github.com/zxreigns/oddsmind" target="_blank" rel="noopener">Source on GitHub</a> · Built for Colosseum Crypto World's Fair 2026</span>
+</div></footer>
+<script src="/assets/app.js" defer></script>
+</body>
+</html>

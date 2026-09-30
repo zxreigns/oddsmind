@@ -1,0 +1,17 @@
+{
+  "name": "oddsmind",
+  "version": "0.1.0",
+  "description": "OddsMind \u2014 AI research desk for Panta prediction markets on Solana",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "node dev/local-server.mjs 8787",
+    "test": "node --test test/*.test.mjs",
+    "seed-titles": "node scripts/seed-titles.mjs"
+  },
+  "license": "MIT",
+  "author": "Matthew Ifeanyi",
+  "engines": {
+    "node": ">=20"
+  }
+}

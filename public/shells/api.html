@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}}</title>
+<meta name="description" content="{{DESC}}">
+<meta property="og:title" content="{{TITLE}}">
+<meta property="og:description" content="{{DESC}}">
+<meta property="og:image" content="{{IMAGE}}">
+<meta property="og:url" content="{{URL}}">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/app.css">
+
+</head>
+<body data-page="api">
+<header class="top"><div class="wrap">
+  <a class="logo" href="/"><img src="/assets/logo.svg" alt="" width="28" height="28">OddsMind</a>
+  <nav class="main" aria-label="Primary">
+    <a href="/" data-nav="pulse">Pulse</a>
+    <a href="/ask" data-nav="ask">Ask</a>
+    <a href="/wallet" data-nav="wallet">Wallet lens</a>
+    <a href="/api" data-nav="api">API</a>
+    <a href="/about" data-nav="about">About</a>
+  </nav>
+</div></header>
+<main><div class="wrap">
+
+<div class="prose">
+<h1>OddsMind API</h1>
+<p class="lead">Every view in OddsMind is backed by a JSON endpoint you can call from your own agent, bot or dashboard. No key needed; responses are cached briefly and always attribute <b>Powered by Panta</b>.</p>
+<p class="note">Base URL: this site. CORS is open. Rate limits are shared and modest — cache on your side. Under the hood each call fans out to Panta's public API (<code>live-api.panta.market/api/v1</code>) with a server-held key.</p>
+<h2>Endpoints</h2>
+<table><thead><tr><th>Endpoint</th><th>What it returns</th><th>Panta calls behind it</th></tr></thead><tbody>
+<tr><td><code>GET /api/pulse</code></td><td>The whole catalog enriched: resolved titles, implied YES/NO, trade counts, 24h volume, wallets, holder concentration, plus totals and category counts.</td><td><code>GET /markets/</code> (paginated), <code>GET /markets/{id}/trades/</code> per market</td></tr>
+<tr><td><code>GET /api/markets?category=&amp;phase=&amp;q=</code></td><td>Filtered subset of the pulse.</td><td>same</td></tr>
+<tr><td><code>GET /api/market/{id}</code></td><td>Market brief data: detail, price + source, tape stats, price series, top holders, live fill depth, last 60 trades.</td><td><code>GET /markets/{id}/</code>, <code>GET /markets/{id}/trades/</code>, <code>POST /primaryorderquote/</code> ×6</td></tr>
+<tr><td><code>GET /api/market/{id}/brief</code></td><td>The AI analyst's brief (headline, read, flow, context with sources, catalysts, risks, confidence).</td><td>same + web search</td></tr>
+<tr><td><code>GET /api/market/{id}/depth</code></td><td>Fill ladder only ($10/$50/$250, YES and NO).</td><td><code>POST /primaryorderquote/</code></td></tr>
+<tr><td><code>GET /api/market/{id}/tape</code></td><td>Raw trade tape (up to 200 rows).</td><td><code>GET /markets/{id}/trades/</code></td></tr>
+<tr><td><code>GET /api/wallet/{address}?ai=1</code></td><td>Positions with current value and claimable flags, trade history, per-market activity, YES/NO bias; <code>ai=1</code> adds a style profile.</td><td><code>GET /positions/?wallet=</code>, <code>GET /wallets/{wallet}/trades/</code></td></tr>
+<tr><td><code>GET|POST /api/ask?q=</code></td><td>Natural-language question → relevant markets + a plain-words answer with odds.</td><td>pulse</td></tr>
+<tr><td><code>GET /embed/{id}</code></td><td>An embeddable market card (iframe) with live odds.</td><td>detail + tape</td></tr>
+<tr><td><code>GET /api/health</code></td><td>Version and configuration state.</td><td>—</td></tr>
+</tbody></table>
+<h2>Example</h2>
+<pre>curl -s https://oddsmind.vercel.app/api/market/6yEBmxJu2oWdubFVKZshVVUpLLsXd61csSfmf8y4Qtwd | jq '{title, yesPrice, priceSource, stats, depth}'</pre>
+<h2>Embed a market</h2>
+<pre>&lt;iframe src="https://oddsmind.vercel.app/embed/MARKET_ID" width="360" height="200" style="border:0;border-radius:14px" loading="lazy"&gt;&lt;/iframe&gt;</pre>
+<p class="footnote">Prices shown are Panta's spot price when the API returns one, else the last trade on the tape — the response always says which (<code>priceSource</code>). Nothing here is financial advice.</p>
+</div>
+
+</div></main>
+<footer class="bottom"><div class="wrap">
+  <a class="powered" href="https://panta.market" target="_blank" rel="noopener"><span class="dot"></span>Powered by Panta</a>
+  <span>Market data via the <a href="https://docs.panta.market/" target="_blank" rel="noopener">Panta API</a> · AI summaries are research aids, not financial advice.</span>
+  <span><a href="https://github.com/zxreigns/oddsmind" target="_blank" rel="noopener">Source on GitHub</a> · Built for Colosseum Crypto World's Fair 2026</span>
+</div></footer>
+<script src="/assets/app.js" defer></script>
+</body>
+</html>

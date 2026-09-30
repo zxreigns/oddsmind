@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}}</title>
+<meta name="description" content="{{DESC}}">
+<meta property="og:title" content="{{TITLE}}">
+<meta property="og:description" content="{{DESC}}">
+<meta property="og:image" content="{{IMAGE}}">
+<meta property="og:url" content="{{URL}}">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/app.css">
+
+</head>
+<body data-page="about">
+<header class="top"><div class="wrap">
+  <a class="logo" href="/"><img src="/assets/logo.svg" alt="" width="28" height="28">OddsMind</a>
+  <nav class="main" aria-label="Primary">
+    <a href="/" data-nav="pulse">Pulse</a>
+    <a href="/ask" data-nav="ask">Ask</a>
+    <a href="/wallet" data-nav="wallet">Wallet lens</a>
+    <a href="/api" data-nav="api">API</a>
+    <a href="/about" data-nav="about">About</a>
+  </nav>
+</div></header>
+<main><div class="wrap">
+
+<div class="prose">
+<h1>About OddsMind</h1>
+<p class="lead">Prediction markets are usually a destination. OddsMind treats them as a data source: a research desk that reads Panta's markets, explains what the price is saying, and hands the same intelligence to agents through an API.</p>
+<h2>What it does</h2>
+<ul>
+<li><b>Pulse</b> — the whole Panta catalog, enriched with each market's trade tape: implied odds, activity, volume, wallets, concentration.</li>
+<li><b>Market brief</b> — one page per market: live odds and source, price history reconstructed from trades, a fill-depth ladder quoted live from the bonding curve, top holders, resolution details, and an AI brief that combines the market data with fresh web context.</li>
+<li><b>Ask</b> — a plain-words question becomes an answer grounded in the markets that actually address it.</li>
+<li><b>Wallet lens</b> — any Solana wallet's Panta positions, current value, claimable winnings and trading style.</li>
+<li><b>Embeds &amp; API</b> — a live market card for any site, and JSON for every view so bots and agents can use market intelligence too.</li>
+</ul>
+<h2>How the Panta API is used</h2>
+<table><thead><tr><th>Panta endpoint</th><th>Used for</th></tr></thead><tbody>
+<tr><td><code>GET /markets/</code></td><td>Discovery — the full USDC catalog, paginated by cursor.</td></tr>
+<tr><td><code>GET /markets/{id}/</code></td><td>Market detail: phase, spot prices, oracle, creator, times, on-chain program and creation signature.</td></tr>
+<tr><td><code>GET /markets/{id}/trades/</code></td><td>The trade tape — reconstructs price history (USDC ÷ shares per fill), 24h activity, YES/NO flow, holder concentration.</td></tr>
+<tr><td><code>POST /primaryorderquote/</code></td><td>Fill depth — read-only quotes for $10/$50/$250 on each side. A quote session opens; no transaction is ever built or signed.</td></tr>
+<tr><td><code>GET /positions/?wallet=</code></td><td>Wallet holdings with valuation, claim eligibility and outcomes.</td></tr>
+<tr><td><code>GET /wallets/{wallet}/trades/</code></td><td>Wallet trade history and per-market activity.</td></tr>
+<tr><td><code>GET /categories/</code></td><td>Category allowlist for filters.</td></tr>
+</tbody></table>
+<p>One honest note: catalog rows for markets created inside the Panta app currently come back with an empty <code>title</code>. OddsMind resolves those titles from the market's public page on panta.market and caches them, and every response says where the title came from (<code>titleSource</code>). Prices likewise state their source — Panta spot when the API returns one, otherwise the last trade on the tape, otherwise “no price data”. Nothing is simulated or made up.</p>
+<h2>Built with</h2>
+<p>A single Cloudflare Worker (static assets + JSON API), a KV cache, Panta's public API, and Gemini for the analyst layer with web grounding. No wallet connection, no keys in the browser, no trades placed. Source: <a href="https://github.com/zxreigns/oddsmind" target="_blank" rel="noopener">github.com/zxreigns/oddsmind</a>.</p>
+<p>Built by Matthew Ifeanyi for the Colosseum Crypto World's Fair 2026 — Panta API sidetrack.</p>
+<p class="footnote">AI briefs are research summaries generated from live data and public web results. They can be wrong. They are not financial advice.</p>
+</div>
+
+</div></main>
+<footer class="bottom"><div class="wrap">
+  <a class="powered" href="https://panta.market" target="_blank" rel="noopener"><span class="dot"></span>Powered by Panta</a>
+  <span>Market data via the <a href="https://docs.panta.market/" target="_blank" rel="noopener">Panta API</a> · AI summaries are research aids, not financial advice.</span>
+  <span><a href="https://github.com/zxreigns/oddsmind" target="_blank" rel="noopener">Source on GitHub</a> · Built for Colosseum Crypto World's Fair 2026</span>
+</div></footer>
+<script src="/assets/app.js" defer></script>
+</body>
+</html>

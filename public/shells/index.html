@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}}</title>
+<meta name="description" content="{{DESC}}">
+<meta property="og:title" content="{{TITLE}}">
+<meta property="og:description" content="{{DESC}}">
+<meta property="og:image" content="{{IMAGE}}">
+<meta property="og:url" content="{{URL}}">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/app.css">
+
+</head>
+<body data-page="index">
+<header class="top"><div class="wrap">
+  <a class="logo" href="/"><img src="/assets/logo.svg" alt="" width="28" height="28">OddsMind</a>
+  <nav class="main" aria-label="Primary">
+    <a href="/" data-nav="pulse">Pulse</a>
+    <a href="/ask" data-nav="ask">Ask</a>
+    <a href="/wallet" data-nav="wallet">Wallet lens</a>
+    <a href="/api" data-nav="api">API</a>
+    <a href="/about" data-nav="about">About</a>
+  </nav>
+</div></header>
+<main><div class="wrap">
+
+<section class="hero">
+  <h1>What do the markets think?</h1>
+  <p class="lead">OddsMind is a research desk over <b>Panta</b> prediction markets on Solana: live odds, order flow, fill depth, wallets — and an AI analyst that explains what the price is saying and why.</p>
+  <form class="search" action="/ask" method="get" role="search">
+    <input name="q" type="search" placeholder="Ask the markets… e.g. “will a female housemate win BBNaija?”" aria-label="Ask a question" autocomplete="off">
+    <button class="btn" type="submit">Ask</button>
+  </form>
+</section>
+<div class="stats" id="stats" aria-live="polite">
+  <div class="stat"><div class="v skeleton" style="height:30px"></div><div class="k">markets</div></div>
+  <div class="stat"><div class="v skeleton" style="height:30px"></div><div class="k">trading now</div></div>
+  <div class="stat"><div class="v skeleton" style="height:30px"></div><div class="k">trades · 24h</div></div>
+  <div class="stat"><div class="v skeleton" style="height:30px"></div><div class="k">priced volume · 24h</div></div>
+  <div class="stat"><div class="v skeleton" style="height:30px"></div><div class="k">active wallets</div></div>
+</div>
+<section class="section" id="digest-sec">
+  <div class="card brief" id="digest"><h2><img src="/assets/logo.svg" alt="" width="22" height="22"> Today on Panta <span class="chip" id="digest-state">writing…</span></h2><div id="digest-body"><div class="skeleton" style="height:22px;margin:8px 0;width:70%"></div><div class="skeleton" style="height:14px;margin:8px 0;width:90%"></div><div class="skeleton" style="height:14px;margin:8px 0;width:60%"></div></div></div>
+</section>
+<section class="section" id="live-sec">
+  <div class="section-head"><h2>Trading now</h2><p>Open markets on Panta's primary curve. Prices are live spot from the API; depth is a read-only quote for a $50 fill.</p></div>
+  <div class="grid" id="live"><div class="card skeleton" style="height:170px"></div><div class="card skeleton" style="height:170px"></div><div class="card skeleton" style="height:170px"></div></div>
+</section>
+<section class="section">
+  <div class="section-head"><h2>The board</h2><p id="board-note">Every USDC market in the Panta catalog, enriched with its trade tape.</p></div>
+  <div class="row" style="justify-content:space-between">
+    <div class="chips" id="cats" role="group" aria-label="Filter by category"></div>
+    <div class="chips" id="phases" role="group" aria-label="Filter by status"><button aria-pressed="true" data-phase="">all</button><button data-phase="live">live</button><button data-phase="resolved">resolved</button></div>
+  </div>
+  <div class="search" style="max-width:420px;margin-bottom:14px"><input id="filter" type="search" placeholder="Filter markets…" aria-label="Filter markets"></div>
+  <div class="table-wrap"><table id="board" aria-label="Markets"><thead><tr><th>Market</th><th>Status</th><th class="num">YES</th><th class="num">Trades</th><th class="num">Wallets</th><th class="num">Volume</th><th>Ends</th></tr></thead><tbody><tr><td colspan="7"><div class="skeleton" style="height:120px"></div></td></tr></tbody></table></div>
+</section>
+<section class="section two">
+  <div class="card"><h3>Most active wallets</h3><p class="muted small" style="margin:0 0 8px">By trades across the whole catalog tape. Click a wallet to open its lens.</p><div id="wallets"><div class="skeleton" style="height:100px"></div></div></div>
+  <div class="card"><h3>How to read this</h3>
+    <p class="small muted" style="margin:0 0 8px">A YES price of 0.62 means the market pays $1 per YES share if the event happens, and the last buyer paid about 62¢ — an implied 62% probability. Thin markets move a lot on small fills, so OddsMind shows the fill depth and how concentrated the flow is before you trust the number.</p>
+    <p class="small muted" style="margin:0">Data: <code>GET /markets/</code>, <code>GET /markets/{id}/</code>, <code>GET /markets/{id}/trades/</code>, <code>POST /primaryorderquote/</code>, <code>GET /positions/</code>, <code>GET /wallets/{wallet}/trades/</code> — all from the Panta public API.</p>
+  </div>
+</section>
+
+</div></main>
+<footer class="bottom"><div class="wrap">
+  <a class="powered" href="https://panta.market" target="_blank" rel="noopener"><span class="dot"></span>Powered by Panta</a>
+  <span>Market data via the <a href="https://docs.panta.market/" target="_blank" rel="noopener">Panta API</a> · AI summaries are research aids, not financial advice.</span>
+  <span><a href="https://github.com/zxreigns/oddsmind" target="_blank" rel="noopener">Source on GitHub</a> · Built for Colosseum Crypto World's Fair 2026</span>
+</div></footer>
+<script src="/assets/app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}}</title>
+<meta name="description" content="{{DESC}}">
+<meta property="og:title" content="{{TITLE}}">
+<meta property="og:description" content="{{DESC}}">
+<meta property="og:image" content="{{IMAGE}}">
+<meta property="og:url" content="{{URL}}">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/app.css">
+
+</head>
+<body data-page="market">
+<header class="top"><div class="wrap">
+  <a class="logo" href="/"><img src="/assets/logo.svg" alt="" width="28" height="28">OddsMind</a>
+  <nav class="main" aria-label="Primary">
+    <a href="/" data-nav="pulse">Pulse</a>
+    <a href="/ask" data-nav="ask">Ask</a>
+    <a href="/wallet" data-nav="wallet">Wallet lens</a>
+    <a href="/api" data-nav="api">API</a>
+    <a href="/about" data-nav="about">About</a>
+  </nav>
+</div></header>
+<main><div class="wrap">
+
+<div id="market" data-id="{{MARKET_ID}}">
+  <p class="muted small" style="margin:0 0 10px"><a href="/">← Pulse</a></p>
+  <div class="mhead">
+    <div>
+      <div class="row" id="m-chips" style="margin-bottom:8px"><span class="chip skeleton" style="width:80px"></span></div>
+      <h1 id="m-title" style="font-size:clamp(22px,3.2vw,32px)"><span class="skeleton" style="display:inline-block;width:70%;height:30px"></span></h1>
+      <div class="meta" id="m-meta"></div>
+    </div>
+    <img id="m-img" alt="" hidden>
+  </div>
+  <div class="two">
+    <div>
+      <div class="card" id="odds-card">
+        <div class="bigodds" id="bigodds"><div><span class="lbl">Implied probability</span><div class="yes skeleton" style="width:120px;height:56px"></div></div></div>
+        <div class="bar" style="margin:14px 0 8px"><i id="m-bar" style="width:0%"></i></div>
+        <div class="meta" id="m-pricemeta"></div>
+        <svg class="chart" id="chart" viewBox="0 0 600 160" preserveAspectRatio="none" role="img" aria-label="YES price history"></svg>
+        <div class="meta" id="chart-note"></div>
+      </div>
+      <div class="card brief" id="brief" style="margin-top:16px">
+        <h2><img src="/assets/logo.svg" alt="" width="22" height="22"> AI brief <span class="chip" id="brief-state">thinking…</span></h2>
+        <div id="brief-body"><div class="skeleton" style="height:22px;margin:8px 0"></div><div class="skeleton" style="height:14px;margin:8px 0;width:90%"></div><div class="skeleton" style="height:14px;margin:8px 0;width:80%"></div><div class="skeleton" style="height:14px;margin:8px 0;width:85%"></div></div>
+      </div>
+      <div class="card" id="tape-card" style="margin-top:16px"><h3>Trade tape</h3><div class="table-wrap"><table id="tape"><thead><tr><th>When</th><th>Side</th><th class="num">USDC</th><th class="num">Shares</th><th class="num">Price</th><th>Wallet</th></tr></thead><tbody></tbody></table></div></div>
+    </div>
+    <div>
+      <div class="card" id="depth-card"><h3>Fill depth</h3><p class="muted small" style="margin:0 0 8px">What a market order would fill at right now, quoted live from Panta's bonding curve (<code>POST /primaryorderquote/</code>). Read-only simulation — nothing is signed or sent.</p><div id="depth"><div class="skeleton" style="height:90px"></div></div></div>
+      <div class="card" style="margin-top:16px"><h3>Flow &amp; holders</h3><div id="flow"><div class="skeleton" style="height:90px"></div></div></div>
+      <div class="card" style="margin-top:16px"><h3>Resolution</h3><dl class="kv" id="res"></dl></div>
+      <div class="card" style="margin-top:16px"><h3>Take it further</h3>
+        <div class="toolbar"><a class="btn" id="trade-link" href="#" target="_blank" rel="noopener">Trade on Panta ↗</a><button class="btn ghost sm" id="embed-btn" type="button">Embed</button><a class="btn ghost sm" id="json-link" href="#">JSON</a><button class="btn ghost sm" id="share-btn" type="button">Copy link</button></div>
+        <pre id="embed-code" hidden></pre>
+        <p class="footnote">OddsMind never holds keys or places trades. The Panta button opens the market on panta.market.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div></main>
+<footer class="bottom"><div class="wrap">
+  <a class="powered" href="https://panta.market" target="_blank" rel="noopener"><span class="dot"></span>Powered by Panta</a>
+  <span>Market data via the <a href="https://docs.panta.market/" target="_blank" rel="noopener">Panta API</a> · AI summaries are research aids, not financial advice.</span>
+  <span><a href="https://github.com/zxreigns/oddsmind" target="_blank" rel="noopener">Source on GitHub</a> · Built for Colosseum Crypto World's Fair 2026</span>
+</div></footer>
+<script src="/assets/app.js" defer></script>
+</body>
+</html>
