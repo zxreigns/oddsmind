@@ -14,7 +14,8 @@ const VERSION = '0.1.0';
 const QUOTE_LADDER = ['10', '50', '250'];
 const QUOTE_WALLET = 'DFhPycAfUvu238tfdAp2BXydzPhetFcVyE13GF1ev6GT'; // read-only quote simulation wallet; no transaction is ever built
 
-const TTL = { catalog: 120, detail: 120, title: 7 * 86400, tape: 300, quotes: 90, brief: 1800, wallet: 120, ask: 600, news: 900 };
+const TTL = { catalog: 120, detail: 180, title: 7 * 86400, tape: 600, quotes: 300, brief: 1800, wallet: 180, ask: 600, news: 900 };
+// Panta rate limits (docs): read 120/60s, positions 60/60s, quote 30/60s — the caches above and the refresh budget in getPulse keep a cold board under them.
 
 
 const LLMS_TXT = `# OddsMind
@@ -65,7 +66,7 @@ async function getConfig(env) {
     geminiKey: env.GEMINI_API_KEY || cfg.gemini_key || null,
     geminiModel: env.GEMINI_MODEL || cfg.gemini_model || 'gemini-3.5-flash-lite',
     groqKey: env.GROQ_API_KEY || cfg.groq_key || null,
-    groqModel: env.GROQ_MODEL || cfg.groq_model || 'llama-3.3-70b-versatile',
+    groqModel: env.GROQ_MODEL || cfg.groq_model || 'openai/gpt-oss-120b',
   };
   memCfg.v = v; memCfg.t = Date.now();
   return v;
@@ -73,7 +74,7 @@ async function getConfig(env) {
 
 // ---------- cache (KV + isolate memory, stale-while-revalidate) ----------
 const mem = new Map();
-async function cached(env, ctx, key, ttl, fn, { swr = true } = {}) {
+async function cached(env, ctx, key, ttl, fn, { swr = true, budget = null } = {}) {
   const now = Date.now();
   const m = mem.get(key);
   if (m && m.exp > now) return m.val;
@@ -87,10 +88,13 @@ async function cached(env, ctx, key, ttl, fn, { swr = true } = {}) {
     if (env.CACHE) { try { await env.CACHE.put('c:' + key, JSON.stringify(rec), { expirationTtl: Math.max(60, ttl * 4) }); } catch (e) {} }
     return val;
   };
-  if (kv && swr) { // stale copy exists: serve it, refresh in background
+  if (kv && swr) { // stale copy exists: serve it, refresh in background (within the caller's refresh budget, if any)
+    if (budget && budget.n <= 0) return kv.val;
+    if (budget) budget.n--;
     if (ctx && ctx.waitUntil) ctx.waitUntil(refresh().catch(() => {}));
     return kv.val;
   }
+  if (kv && budget && budget.n <= 0) return kv.val; // out of budget: stale beats a burst of upstream calls
   return refresh();
 }
 
@@ -113,7 +117,7 @@ async function panta(env, path, { method = 'GET', body, timeoutMs = 15000, retri
       const text = await r.text();
       let data = null; try { data = JSON.parse(text); } catch (e) { data = { raw: text.slice(0, 200) }; }
       // Panta's indexer-backed routes (positions, quotes) intermittently answer 400 INVALID_MARKET_PARAMS for valid input; treat as transient when asked to.
-      if (r.status === 429 || r.status >= 500 || (retryOn400 && r.status === 400 && data && data.code === 'INVALID_MARKET_PARAMS' && i < retries)) { lastErr = new PantaError(r.status, data); await new Promise((res) => setTimeout(res, 500 * (i + 1))); continue; }
+      if (r.status === 429 || r.status >= 500 || (retryOn400 && r.status === 400 && data && data.code === 'INVALID_MARKET_PARAMS' && i < retries)) { lastErr = new PantaError(r.status, data); const ra = Math.min(4000, (parseFloat(r.headers.get('retry-after')) || 0) * 1000); await new Promise((res) => setTimeout(res, ra || 500 * (i + 1))); continue; }
       if (!r.ok) throw new PantaError(r.status, data);
       return data;
     } catch (e) {
@@ -195,7 +199,7 @@ function tapeStats(items) {
     holders: holders.slice(0, 10).map((w) => ({ ...w, shares: +w.shares.toFixed(2), usdc: +w.usdc.toFixed(2), yes: +w.yes.toFixed(2), no: +w.no.toFixed(2) })),
   };
 }
-const getTape = (env, ctx, id) => cached(env, ctx, 'tape:' + id, TTL.tape, async () => (await panta(env, `/markets/${id}/trades/?limit=200`)).items || []);
+const getTape = (env, ctx, id, budget = null) => cached(env, ctx, 'tape:' + id, TTL.tape, async () => (await panta(env, `/markets/${id}/trades/?limit=200`)).items || [], { budget });
 
 // depth ladder: read-only quote simulations (POST /primaryorderquote/ opens a quote session; no transaction is built or signed)
 async function depthLadder(env, ctx, id) {
@@ -250,11 +254,11 @@ function summarizeMarket(m, title, stats, price) {
 }
 
 // enriched catalog row (title + tape stats), cached per market
-async function enrichRow(env, ctx, m, { tape = true } = {}) {
+async function enrichRow(env, ctx, m, { tape = true, budget = null } = {}) {
   const live = m.phase === 'primary' && !m.resolved;
   const [title, tapeItems, detail] = await Promise.all([
     resolveTitle(env, ctx, m.marketId, m.title),
-    tape ? getTape(env, ctx, m.marketId).catch(() => null) : Promise.resolve(null),
+    tape ? getTape(env, ctx, m.marketId, budget).catch(() => null) : Promise.resolve(null),
     // list rows leave spot prices null; for the few live markets the detail row carries them
     live ? cached(env, ctx, 'detail:' + m.marketId, TTL.detail, () => panta(env, `/markets/${m.marketId}/`)).catch(() => null) : Promise.resolve(null),
   ]);
@@ -275,9 +279,10 @@ async function mapLimit(items, limit, fn) {
 async function getPulse(env, ctx, { budgetMs = 20000 } = {}) {
   const catalog = await getCatalog(env, ctx);
   const started = Date.now();
-  const rows = await mapLimit(catalog, 8, async (m) => {
+  const budget = { n: 40 }; // at most 40 stale-tape refreshes per pulse call (Panta read limit is 120/min)
+  const rows = await mapLimit(catalog, 6, async (m) => {
     if (Date.now() - started > budgetMs) { const t = await resolveTitle(env, ctx, m.marketId, m.title); return { ...summarizeMarket(m, t, null, derivePrice(m, null)), pending: true }; }
-    return enrichRow(env, ctx, m, { tape: true });
+    return enrichRow(env, ctx, m, { tape: true, budget });
   });
   const now = nowSec();
   const tradable = rows.filter((r) => r.tradable);
@@ -303,7 +308,9 @@ async function llm(env, { system, user, temperature = 0.4, maxTokens = 2048 }) {
     }
   }
   if (cfg.groqKey) {
-    try { return await groqCall(cfg.groqKey, cfg.groqModel, { system, user, temperature, maxTokens }); } catch (e) { errors.push(`groq: ${String(e.message || e).slice(0, 120)}`); }
+    for (const model of [...new Set([cfg.groqModel, 'qwen/qwen3.8-27b'])]) {
+      try { return await groqCall(cfg.groqKey, model, { system, user, temperature, maxTokens }); } catch (e) { errors.push(`groq ${model}: ${String(e.message || e).slice(0, 120)}`); }
+    }
   }
   throw new Error(errors.length ? errors.join(' | ') : 'LLM not configured');
 }
@@ -327,13 +334,13 @@ async function geminiCall(key, model, { system, user, temperature, maxTokens }) 
 async function groqCall(key, model, { system, user, temperature, maxTokens }) {
   const ac = new AbortController(); const t = setTimeout(() => ac.abort(), 40000);
   let r;
-  try { r = await fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', signal: ac.signal, headers: { 'content-type': 'application/json', authorization: 'Bearer ' + key }, body: JSON.stringify({ model: model || 'llama-3.3-70b-versatile', temperature, max_tokens: maxTokens, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] }) }); }
+  try { r = await fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', signal: ac.signal, headers: { 'content-type': 'application/json', authorization: 'Bearer ' + key }, body: JSON.stringify({ model: model || 'openai/gpt-oss-120b', temperature, max_completion_tokens: Math.max(1500, maxTokens), ...(/gpt-oss/.test(model || 'openai/gpt-oss-120b') ? { reasoning_effort: 'low' } : {}), response_format: { type: 'json_object' }, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] }) }); }
   finally { clearTimeout(t); }
   const data = await r.json();
   if (!r.ok) throw new Error('HTTP ' + r.status + ' ' + ((data.error && data.error.message) || '').slice(0, 120));
   const text = (((data.choices || [])[0] || {}).message || {}).content || '';
   if (!text) throw new Error('empty answer');
-  return { text, model: model || 'llama-3.3-70b-versatile', usage: data.usage || null };
+  return { text, model: model || 'openai/gpt-oss-120b', usage: data.usage || null };
 }
 
 // news context: Google News RSS for the market's question (no key needed), cached
@@ -531,7 +538,7 @@ export default {
       }
 
       // API
-      if (p === '/api/health') { const cfg = await getConfig(env); return json({ ok: true, version: VERSION, panta: !!cfg.pantaKey, llm: !!(cfg.geminiKey || cfg.groqKey), model: cfg.geminiModel, fallback: cfg.groqKey ? cfg.groqModel : null, kv: !!env.CACHE, poweredBy: 'Panta' }); }
+      if (p === '/api/health') { const cfg = await getConfig(env); return json({ ok: true, version: VERSION, panta: !!cfg.pantaKey, llm: !!(cfg.geminiKey || cfg.groqKey), model: cfg.geminiModel, fallback: cfg.groqKey ? cfg.groqModel : null, cache: env.CACHE ? (env.CACHE.kind || 'store') : 'none', poweredBy: 'Panta' }); }
       if (p === '/api/pulse') { const budget = Math.min(25000, +(url.searchParams.get('budget') || 20000)); return json(await getPulse(env, ctx, { budgetMs: budget })); }
       if (p === '/api/markets') {
         const cat = url.searchParams.get('category'); const phase = url.searchParams.get('phase'); const q = (url.searchParams.get('q') || '').toLowerCase();
