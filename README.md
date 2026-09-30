@@ -2,7 +2,7 @@
 
 **A research desk over [Panta](https://panta.market) prediction markets on Solana.** Live odds, order flow, fill depth, wallets — and an AI analyst that explains what the price is saying, why, and what could move it. Every view is also a JSON endpoint, so agents and bots can use market intelligence too.
 
-**Live:** https://oddsmind.vercel.app · **API docs:** https://oddsmind.vercel.app/api · Built for the Colosseum Crypto World's Fair 2026 — Panta API sidetrack.
+**Live:** https://oddsmind-app.vercel.app · **API docs:** https://oddsmind-app.vercel.app/api · Built for the Colosseum Crypto World's Fair 2026 — Panta API sidetrack.
 
 > Prediction markets are usually a destination. OddsMind treats them as a **data source**: the crowd's live probability, plus the context to judge how much to trust it.
 
@@ -66,11 +66,11 @@ The dev server runs the exact app module with a Map-backed cache and a static fi
 
 ## API
 
-See https://oddsmind.vercel.app/api for the endpoint table. Quick taste:
+See https://oddsmind-app.vercel.app/api for the endpoint table. Quick taste:
 
 ```bash
-curl -s https://oddsmind.vercel.app/api/market/6yEBmxJu2oWdubFVKZshVVUpLLsXd61csSfmf8y4Qtwd | jq '{title, yesPrice, priceSource, stats, depth}'
-curl -s "https://oddsmind.vercel.app/api/ask?q=what+does+the+market+think+about+BBNaija"
+curl -s https://oddsmind-app.vercel.app/api/market/6yEBmxJu2oWdubFVKZshVVUpLLsXd61csSfmf8y4Qtwd | jq '{title, yesPrice, priceSource, stats, depth}'
+curl -s "https://oddsmind-app.vercel.app/api/ask?q=what+does+the+market+think+about+BBNaija"
 ```
 
 ## Notes for the Panta team (things we hit while building)

@@ -5,7 +5,7 @@ import path from 'node:path';
 const exe = fs.readdirSync(process.env.HOME + '/.cache/ms-playwright').filter(d => d.startsWith('chromium-')).map(d => `${process.env.HOME}/.cache/ms-playwright/${d}/chrome-linux/chrome`).find(p => fs.existsSync(p));
 const [,, name, outDir, durStr] = process.argv;
 const dur = +durStr * 1000;
-const BASE = 'https://oddsmind.vercel.app';
+const BASE = 'https://oddsmind-app.vercel.app';
 const MKT = '6yEBmxJu2oWdubFVKZshVVUpLLsXd61csSfmf8y4Qtwd';
 const WALLET = 'CzYecSKKe63Ej4jdShacVLCbEoXAS5TzjjLsoYibRBwd';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

@@ -48,9 +48,9 @@
 <tr><td><code>GET /api/health</code></td><td>Version and configuration state.</td><td>—</td></tr>
 </tbody></table>
 <h2>Example</h2>
-<pre>curl -s https://oddsmind.vercel.app/api/market/6yEBmxJu2oWdubFVKZshVVUpLLsXd61csSfmf8y4Qtwd | jq '{title, yesPrice, priceSource, stats, depth}'</pre>
+<pre>curl -s https://oddsmind-app.vercel.app/api/market/6yEBmxJu2oWdubFVKZshVVUpLLsXd61csSfmf8y4Qtwd | jq '{title, yesPrice, priceSource, stats, depth}'</pre>
 <h2>Embed a market</h2>
-<pre>&lt;iframe src="https://oddsmind.vercel.app/embed/MARKET_ID" width="360" height="200" style="border:0;border-radius:14px" loading="lazy"&gt;&lt;/iframe&gt;</pre>
+<pre>&lt;iframe src="https://oddsmind-app.vercel.app/embed/MARKET_ID" width="360" height="200" style="border:0;border-radius:14px" loading="lazy"&gt;&lt;/iframe&gt;</pre>
 <p class="footnote">Prices shown are Panta's spot price when the API returns one, else the last trade on the tape — the response always says which (<code>priceSource</code>). Nothing here is financial advice.</p>
 </div>
 
